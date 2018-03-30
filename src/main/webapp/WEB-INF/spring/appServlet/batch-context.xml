@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans xmlns="http://www.springframework.org/schema/batch"
+        xmlns:beans="http://www.springframework.org/schema/beans"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="
+            http://www.springframework.org/schema/beans
+            http://www.springframework.org/schema/beans/spring-beans.xsd
+            http://www.springframework.org/schema/batch
+            http://www.springframework.org/schema/batch/spring-batch-2.2.xsd">
+
+    <job id="job2">
+        <step id="step2">
+            <tasklet allow-start-if-complete="true">
+                <chunk
+                    reader="testItemReader"
+                    processor="testItemProcessor"
+                    writer="testItemWriter" commit-interval="10"/>
+            </tasklet>
+        </step>
+    </job>
+    
+    <beans:bean id="testItemReader" class="com.dv.batch.TestItemReader" />
+    
+    <beans:bean id="testItemProcessor" class="com.dv.batch.TestItemProcessor" init-method="init" />
+    
+    <beans:bean id="testItemWriter" class="com.dv.batch.TestItemWriter">
+        <beans:property name="batchMapper" ref="batchMapper" />
+    </beans:bean>
+    
+    
+    <beans:bean id="transactionManager"
+        class="org.springframework.batch.support.transaction.ResourcelessTransactionManager" />
+
+    <beans:bean id="jobRepository"
+            class="org.springframework.batch.core.repository.support.MapJobRepositoryFactoryBean">
+        <beans:property name="transactionManager" ref="transactionManager" />
+    </beans:bean>
+    
+    <beans:bean id="jobLauncher"
+        class="org.springframework.batch.core.launch.support.SimpleJobLauncher">
+        <beans:property name="jobRepository" ref="jobRepository" />
+    </beans:bean> 
+
+</beans:beans>

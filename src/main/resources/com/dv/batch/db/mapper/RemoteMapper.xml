@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.dv.batch.db.mapper.RemoteMapper">
+
+    <resultMap id="RemoteTicket" type="RemoteTicket">
+        <id column="ID" property="id" />
+        <id column="QUEUE_ACTIVATED" property="queueActivated" />
+        <id column="QUEUE_POSITION" property="queuePosition" />
+        <id column="WORK_ID" property="workId" />
+        <id column="FILE_NAME" property="fileName" />
+        <id column="FILE_LENGTH" property="fileLength" />
+        <id column="FILE_HEIGHT" property="fileHeight" />
+        <id column="FILE_PIXEL_X" property="filePixelX" />
+        <id column="FILE_PIXEL_Y" property="filePixelY" />
+        <id column="FILE_RESOLUTION_X" property="fileResolutionX" />
+        <id column="FILE_RESOLUTION_Y" property="fileResolutionY" />
+        <id column="FILE_TOTALPIXELX" property="fileTotalpixelX" />
+        <id column="FILE_TOTALPIXELY" property="fileTotalpixelY" />
+        <id column="FILE_TOTALSIZEX" property="fileTotalsizex" />
+        <id column="FILE_TOTALSIZEY" property="fileTotalsizey" />
+        <id column="CYLINDER_LENGTH" property="cylinderLength" />
+        <id column="CYLINDER_DIAMETER" property="cylinderDiameter" />
+        <id column="CYLINDER_START_AT" property="cylinderStartAt" />
+        <id column="CYLINDER_CROSS_AT" property="cylinderCrossAt" />
+        <id column="LASER_KIND" property="laserKind" />
+        <id column="LASER_SOURCES" property="laserSources" />
+        <id column="LASER_MIN_POWER" property="laserMinPower" />
+        <id column="LASER_MAX_POWER" property="laserMaxPower" />
+        <id column="LASER_SHOTS" property="laserShots" />
+        <id column="LASER_PERIOD" property="laserPeriod" />
+        <id column="SETUP_CALIBRATION" property="setupCalibration" />
+        <id column="SETUP_OFFSET_X" property="setupOffsetX" />
+        <id column="SETUP_OFFSET_Y" property="setupOffsetY" />
+        <id column="SETUP_Z_PRESENT" property="setupZPresent" />
+        <id column="SETUP_Z_POSITION" property="setupZPosition" />
+        <id column="SETUP_FOCAL_PRESENT" property="setupFocalPresent" />
+        <id column="SETUP_FOCAL_POSITION" property="setupFocalPosition" />
+        <id column="SETUP_SPEED" property="setupSpeed" />
+        <id column="SETUP_ENGRAVING_MODE" property="setupEngravingMode" />
+        <id column="PRINT_START_AT" property="printStartAt" />
+        <id column="PRINT_STOP_AT" property="printStopAt" />
+        <id column="PRINT_STATUS" property="printStatus" />
+        <id column="PRINT_ERROR" property="printError" />
+    </resultMap>
+        
+    <select id="getAllTickets" resultMap="RemoteTicket">
+        SELECT * FROM register
+        ORDER BY id ASC
+    </select>
+    
+    <select id="getTicketsFromId" parameterType="int" resultMap="RemoteTicket">
+        SELECT * FROM register
+        WHERE ID >= #{id}
+        ORDER BY id ASC
+    </select>
+    
+</mapper>

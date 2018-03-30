@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:mvc="http://www.springframework.org/schema/mvc"
+    xmlns:faces="http://www.springframework.org/schema/faces"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xsi:schemaLocation="
+        http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <context:property-placeholder location="classpath:jdbc.properties" />
+
+    <bean id="dataSource"
+        class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+        <property name="driverClassName" value="${jdbc.driverClassName}" />
+        <property name="url" value="${jdbc.url}" />
+        <property name="username" value="${jdbc.username}" />
+        <property name="password" value="${jdbc.password}" />
+    </bean>
+
+    <!-- sqlSessionFactory -->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="dataSource" />
+        <!-- alias per i package -->
+        <property name="typeAliasesPackage" value="com.dv.batch.db.bean"></property>
+        <!-- questo server per gli xml nel caso in cui classi java e file 
+            xml siano in classpath diversi -->
+        <!-- <property name="mapperLocations" value="classpath*:com/dv/webmanager/mapper/*.xml" 
+            /> -->
+    </bean>
+
+    <!-- Scanning for java mappers interface (utilizzato se uso le annotations 
+        (credo) ) -->
+    <!-- <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer"> -->
+    <!-- <property name="basePackage" value="com.dv.webmanager.db.mapper" 
+        /> -->
+    <!-- </bean> -->
+
+
+    <!-- Lista mappers -->
+    <bean id="batchMapper" class="org.mybatis.spring.mapper.MapperFactoryBean">
+        <property name="mapperInterface" value="com.dv.batch.db.mapper.BatchMapper" />
+        <property name="sqlSessionFactory" ref="sqlSessionFactory" />
+    </bean>
+    
+<!--     <bean id="remoteMapper" class="org.mybatis.spring.mapper.MapperFactoryBean"> -->
+<!--         <property name="mapperInterface" value="com.dv.batch.db.mapper.RemoteMapper" /> -->
+<!--         <property name="sqlSessionFactory" ref="sqlSessionFactory" /> -->
+<!--     </bean> -->
+
+</beans>

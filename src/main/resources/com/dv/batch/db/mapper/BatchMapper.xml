@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.dv.batch.db.mapper.BatchMapper">
+
+    <resultMap type="Ticket" id="Ticket">
+        <id column="ID_M" property="idM" />
+        <id column="ID_T" property="idT" />
+        <id column="QUEUE_ACTIVATED" property="queueActivated" />
+        <id column="QUEUE_POSITION" property="queuePosition" />
+        <id column="WORK_ID" property="workId" />
+        <id column="FILE_NAME" property="fileName" />
+        <id column="FILE_LENGTH" property="fileLength" />
+        <id column="FILE_HEIGHT" property="fileHeight" />
+        <id column="FILE_PIXEL_X" property="filePixelX" />
+        <id column="FILE_PIXEL_Y" property="filePixelY" />
+        <id column="FILE_RESOLUTION_X" property="fileResolutionX" />
+        <id column="FILE_RESOLUTION_Y" property="fileResolutionY" />
+        <id column="FILE_TOTALPIXELX" property="fileTotalpixelX" />
+        <id column="FILE_TOTALPIXELY" property="fileTotalpixelY" />
+        <id column="FILE_TOTALSIZEX" property="fileTotalsizex" />
+        <id column="FILE_TOTALSIZEY" property="fileTotalsizey" />
+        <id column="CYLINDER_LENGTH" property="cylinderLength" />
+        <id column="CYLINDER_DIAMETER" property="cylinderDiameter" />
+        <id column="CYLINDER_START_AT" property="cylinderStartAt" />
+        <id column="CYLINDER_CROSS_AT" property="cylinderCrossAt" />
+        <id column="LASER_KIND" property="laserKind" />
+        <id column="LASER_SOURCES" property="laserSources" />
+        <id column="LASER_MIN_POWER" property="laserMinPower" />
+        <id column="LASER_MAX_POWER" property="laserMaxPower" />
+        <id column="LASER_SHOTS" property="laserShots" />
+        <id column="LASER_PERIOD" property="laserPeriod" />
+        <id column="SETUP_CALIBRATION" property="setupCalibration" />
+        <id column="SETUP_OFFSET_X" property="setupOffsetX" />
+        <id column="SETUP_OFFSET_Y" property="setupOffsetY" />
+        <id column="SETUP_Z_PRESENT" property="setupZPresent" />
+        <id column="SETUP_Z_POSITION" property="setupZPosition" />
+        <id column="SETUP_FOCAL_PRESENT" property="setupFocalPresent" />
+        <id column="SETUP_FOCAL_POSITION" property="setupFocalPosition" />
+        <id column="SETUP_SPEED" property="setupSpeed" />
+        <id column="SETUP_ENGRAVING_MODE" property="setupEngravingMode" />
+        <id column="PRINT_START_AT" property="printStartAt" />
+        <id column="PRINT_STOP_AT" property="printStopAt" />
+        <id column="PRINT_STATUS" property="printStatus" />
+        <id column="PRINT_ERROR" property="printError" />
+        <id column="NOTES" property="notes" />
+
+    </resultMap>
+    
+    <resultMap type="Machine" id="Machine">
+        <id column="ID" property="id" />
+        <id column="NAME" property="name" />
+        <id column="LAST_UPDATE" property="lastUpdate" />
+        <id column="IP" property="ip" />    
+    </resultMap>
+    
+    <resultMap type="MachineMaxTicket" id="MachineMaxTicket">
+        <id column="ID" property="id" />
+        <id column="IP" property="ip" />    
+        <id column="MAX_TICKET" property="maxTicket" />
+    </resultMap>
+    
+    
+    
+    <select id="selectMachine" resultMap="Machine">
+        SELECT * FROM MACHINE
+    </select>
+    
+    <select id="selectTicket" parameterType="map" resultMap="Ticket">
+        SELECT * FROM PRINT_TICKET
+        WHERE ID_M = #{param1} AND ID_T = #{param2}
+    </select>
+    
+    <select id="getLastIdTicketMachine" resultMap="MachineMaxTicket">
+        SELECT ID, IP, MAX_TICKET FROM
+        (SELECT ID, IP FROM MACHINE) AS M
+        LEFT OUTER JOIN
+        (SELECT PRINT_TICKET.ID_M, MAX(PRINT_TICKET.ID_T) AS MAX_TICKET FROM PRINT_TICKET GROUP BY PRINT_TICKET.ID_M) AS T
+        ON T.ID_M = M.ID
+    </select>
+    
+    <update id="updateTicket">
+        UPDATE PRINT_TICKET SET
+        QUEUE_ACTIVATED = #{queueActivated},
+        QUEUE_POSITION = #{queuePosition},
+        WORK_ID = #{workId},
+        FILE_NAME = #{fileName},
+        FILE_LENGTH = #{fileLength},
+        FILE_HEIGHT = #{fileHeight},
+        FILE_PIXEL_X = #{filePixelX},
+        FILE_PIXEL_Y = #{filePixelY},
+        FILE_RESOLUTION_X = #{fileResolutionX},
+        FILE_RESOLUTION_Y = #{fileResolutionY},
+        FILE_TOTALPIXELX = #{fileTotalpixelX},
+        FILE_TOTALPIXELY = #{fileTotalpixelY},
+        FILE_TOTALSIZEX = #{fileTotalsizex},
+        FILE_TOTALSIZEY = #{fileTotalsizey},
+        CYLINDER_LENGTH = #{cylinderLength},
+        CYLINDER_DIAMETER = #{cylinderDiameter},
+        CYLINDER_START_AT = #{cylinderStartAt},
+        CYLINDER_CROSS_AT = #{cylinderCrossAt},
+        LASER_KIND = #{laserKind},
+        LASER_SOURCES = #{laserSources},
+        LASER_MIN_POWER = #{laserMinPower},
+        LASER_MAX_POWER = #{laserMaxPower},
+        LASER_SHOTS = #{laserShots},
+        LASER_PERIOD = #{laserPeriod},
+        SETUP_CALIBRATION = #{setupCalibration},
+        SETUP_OFFSET_X = #{setupOffsetX},
+        SETUP_OFFSET_Y = #{setupOffsetY},
+        SETUP_Z_PRESENT = #{setupZPresent},
+        SETUP_Z_POSITION = #{setupZPosition},
+        SETUP_FOCAL_PRESENT = #{setupFocalPresent},
+        SETUP_FOCAL_POSITION = #{setupFocalPosition},
+        SETUP_SPEED = #{setupSpeed},
+        SETUP_ENGRAVING_MODE = #{setupEngravingMode},
+        PRINT_START_AT = #{printStartAt},
+        PRINT_STOP_AT = #{printStopAt},
+        PRINT_STATUS = #{printStatus},
+        PRINT_ERROR = #{printError},
+        NOTES = #{notes}
+        WHERE
+        ID_M = #{idM} AND ID_T = #{idT}
+    </update>
+    
+    <update id="updateMachineUpdateTime">
+        UPDATE MACHINE
+        SET LAST_UPDATE = #{lastUpdate}
+        WHERE MACHINE.ID = #{id}
+    </update>
+    
+    <insert id="insertNewTickets">
+        INSERT INTO PRINT_TICKET (
+            ID_M,
+            ID_T,
+            QUEUE_ACTIVATED,
+            QUEUE_POSITION,
+            WORK_ID,
+            FILE_NAME,
+            FILE_LENGTH,
+            FILE_HEIGHT,
+            FILE_PIXEL_X,
+            FILE_PIXEL_Y,
+            FILE_RESOLUTION_X,
+            FILE_RESOLUTION_Y,
+            FILE_TOTALPIXELX,
+            FILE_TOTALPIXELY,
+            FILE_TOTALSIZEX,
+            FILE_TOTALSIZEY,
+            CYLINDER_LENGTH,
+            CYLINDER_DIAMETER,
+            CYLINDER_START_AT,
+            CYLINDER_CROSS_AT,
+            LASER_KIND,
+            LASER_SOURCES,
+            LASER_MIN_POWER,
+            LASER_MAX_POWER,
+            LASER_SHOTS,
+            LASER_PERIOD,
+            SETUP_CALIBRATION,
+            SETUP_OFFSET_X,
+            SETUP_OFFSET_Y,
+            SETUP_Z_PRESENT,
+            SETUP_Z_POSITION,
+            SETUP_FOCAL_PRESENT,
+            SETUP_FOCAL_POSITION,
+            SETUP_SPEED,
+            SETUP_ENGRAVING_MODE,
+            PRINT_START_AT,
+            PRINT_STOP_AT,
+            PRINT_STATUS,
+            PRINT_ERROR,
+            NOTES
+        ) VALUES
+        <foreach item="item" collection="list" separator=",">
+            (
+            #{item.idM},
+            #{item.idT},
+            #{item.queueActivated},
+            #{item.queuePosition},
+            #{item.workId},
+            #{item.fileName},
+            #{item.fileLength},
+            #{item.fileHeight},
+            #{item.filePixelX},
+            #{item.filePixelY},
+            #{item.fileResolutionX},
+            #{item.fileResolutionY},
+            #{item.fileTotalpixelX},
+            #{item.fileTotalpixelY},
+            #{item.fileTotalsizex},
+            #{item.fileTotalsizey},
+            #{item.cylinderLength},
+            #{item.cylinderDiameter},
+            #{item.cylinderStartAt},
+            #{item.cylinderCrossAt},
+            #{item.laserKind},
+            #{item.laserSources},
+            #{item.laserMinPower},
+            #{item.laserMaxPower},
+            #{item.laserShots},
+            #{item.laserPeriod},
+            #{item.setupCalibration},
+            #{item.setupOffsetX},
+            #{item.setupOffsetY},
+            #{item.setupZPresent},
+            #{item.setupZPosition},
+            #{item.setupFocalPresent},
+            #{item.setupFocalPosition},
+            #{item.setupSpeed},
+            #{item.setupEngravingMode},
+            #{item.printStartAt},
+            #{item.printStopAt},
+            #{item.printStatus},
+            #{item.printError},
+            #{item.notes}
+            )
+        </foreach>
+    </insert>
+
+</mapper>
