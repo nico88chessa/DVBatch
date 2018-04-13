@@ -8,13 +8,13 @@
             http://www.springframework.org/schema/batch
             http://www.springframework.org/schema/batch/spring-batch-2.2.xsd">
 
-    <job id="job2">
-        <step id="step2">
+    <job id="job">
+        <step id="step">
             <tasklet allow-start-if-complete="true">
                 <chunk
                     reader="testItemReader"
                     processor="testItemProcessor"
-                    writer="testItemWriter" commit-interval="10"/>
+                    writer="testItemWriter" commit-interval="2"/>
             </tasklet>
         </step>
     </job>

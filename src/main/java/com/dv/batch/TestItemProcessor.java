@@ -7,8 +7,7 @@ import java.util.Properties;
 
 import javax.sql.DataSource;
 
-import org.apache.ibatis.datasource.pooled.PooledDataSourceFactory;
-import org.apache.ibatis.exceptions.PersistenceException;
+import org.apache.ibatis.datasource.unpooled.UnpooledDataSourceFactory;
 import org.apache.ibatis.mapping.Environment;
 import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.SqlSession;
@@ -16,6 +15,8 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.apache.ibatis.session.SqlSessionFactoryBuilder;
 import org.apache.ibatis.transaction.TransactionFactory;
 import org.apache.ibatis.transaction.jdbc.JdbcTransactionFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.batch.item.ItemProcessor;
 
 import com.dv.batch.bean.WriterItem;
@@ -24,6 +25,10 @@ import com.dv.batch.db.bean.RemoteTicket;
 import com.dv.batch.db.mapper.RemoteMapper;
 
 public class TestItemProcessor implements ItemProcessor<MachineMaxTicket, WriterItem> {
+
+    private static Logger logger = LoggerFactory.getLogger(TestItemProcessor.class);
+
+    private static final int DEFAULT_TIMEOUT = 10;
 
     private Map<Integer, SqlSessionFactory> listSqlSessionFactory;
     private Map<Integer, String> listIpSqlSessionBinding;
@@ -55,9 +60,12 @@ public class TestItemProcessor implements ItemProcessor<MachineMaxTicket, Writer
 
     private void buildSqlSessionFactory(MachineMaxTicket machine) {
 
-        TransactionFactory transactionFactory = new JdbcTransactionFactory();
-        PooledDataSourceFactory dataSourceFactory = new PooledDataSourceFactory();
+        logger.trace("buildSqlSessionFactory enter");
 
+        TransactionFactory transactionFactory = new JdbcTransactionFactory();
+        UnpooledDataSourceFactory dataSourceFactory = new UnpooledDataSourceFactory();
+
+        // TODO mettere i parametri in un file di properties
         String url = "jdbc:mysql://"+machine.getIp()+":3306/machine?autoReconnect=true&useSSL=false";
         Properties prop = new Properties();
         prop.setProperty("username", "DVBatch");
@@ -66,6 +74,11 @@ public class TestItemProcessor implements ItemProcessor<MachineMaxTicket, Writer
         prop.setProperty("url", url);
 
         dataSourceFactory.setProperties(prop);
+
+        logger.trace("username: "+"DVBatch");
+        logger.trace("password: "+"DVBatch");
+        logger.trace("driver: "+"com.mysql.jdbc.Driver");
+        logger.trace("url: "+url);
 
         DataSource dataSource = dataSourceFactory.getDataSource();
         String envKey = "env-"+machine.getId();
@@ -76,6 +89,7 @@ public class TestItemProcessor implements ItemProcessor<MachineMaxTicket, Writer
 
         config.setLazyLoadingEnabled(true);
         config.getTypeAliasRegistry().registerAlias(RemoteTicket.class);
+        config.setDefaultStatementTimeout(DEFAULT_TIMEOUT);
         config.addMapper(RemoteMapper.class);
 
         SqlSessionFactoryBuilder builder = new SqlSessionFactoryBuilder();
@@ -83,10 +97,15 @@ public class TestItemProcessor implements ItemProcessor<MachineMaxTicket, Writer
 
         listSqlSessionFactory.put(machine.getId(), sessionFactory);
         listIpSqlSessionBinding.put(machine.getId(), machine.getIp());
+
+        logger.trace("buildSqlSessionFactory exit");
     }
+
 
     @Override
     public WriterItem process(MachineMaxTicket machine) {
+
+        logger.trace("enter");
 
         if (!listSqlSessionFactory.containsKey(machine.getId())) {
 
@@ -107,8 +126,8 @@ public class TestItemProcessor implements ItemProcessor<MachineMaxTicket, Writer
         }
 
         SqlSession session = listSqlSessionFactory.get(machine.getId()).openSession();
-
         RemoteMapper mapper = session.getMapper(RemoteMapper.class);
+        WriterItem writerItem = null;
 
         try {
             List<RemoteTicket> tickets = mapper.getTicketsFromId(machine.getMaxTicket());
@@ -116,25 +135,19 @@ public class TestItemProcessor implements ItemProcessor<MachineMaxTicket, Writer
             if (tickets.isEmpty())
                 return null;
 
-            WriterItem writerItem = new WriterItem();
-
+            writerItem = new WriterItem();
             writerItem.setRemoteTicketList(tickets);
             writerItem.setMachineMaxTicket(machine);
 
-            return writerItem;
-
-        } catch (PersistenceException e) {
-            int prova = 0;
-            prova += 1;
-            // qualcosa e' andato storto
-            // interrompo l'esecuzione del batch
-            // dovrei loggare...log 4j
-
+        } catch (Exception e) {
+            logger.error(e.getMessage());
         } finally {
             session.close();
         }
 
-        return null;
+        logger.trace("exit");
+
+        return writerItem;
 
     }
 

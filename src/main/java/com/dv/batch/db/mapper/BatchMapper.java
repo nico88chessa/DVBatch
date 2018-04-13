@@ -17,6 +17,8 @@ public interface BatchMapper {
 
     public List<MachineMaxTicket> getLastIdTicketMachine();
 
+    public void deleteMachine();
+
     public void updateTicket(Ticket ticket);
 
     public void updateMachineUpdateTime(Machine machine);

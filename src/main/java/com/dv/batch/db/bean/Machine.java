@@ -6,6 +6,7 @@ public class Machine {
     private String name;
     private java.util.Date lastUpdate;
     private String ip;
+    private boolean toDelete;
 
     public int getId() {
         return id;
@@ -30,6 +31,12 @@ public class Machine {
     }
     public void setIp(String ip) {
         this.ip = ip;
+    }
+    public boolean isToDelete() {
+        return toDelete;
+    }
+    public void setToDelete(boolean toDelete) {
+        this.toDelete = toDelete;
     }
 
 }

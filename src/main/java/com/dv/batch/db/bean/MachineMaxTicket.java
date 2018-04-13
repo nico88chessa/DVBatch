@@ -30,4 +30,11 @@ public class MachineMaxTicket {
         this.maxTicket = maxTicket;
     }
 
+    public boolean equals(Object other) {
+        if (!(other instanceof MachineMaxTicket))
+            return false;
+
+        return this.id == ((MachineMaxTicket) other).id;
+    }
+
 }

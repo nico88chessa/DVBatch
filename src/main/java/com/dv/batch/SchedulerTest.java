@@ -1,9 +1,13 @@
 package com.dv.batch;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.Job;
-import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.launch.JobLauncher;
 
@@ -12,9 +16,12 @@ import com.dv.batch.db.mapper.BatchMapper;
 
 public class SchedulerTest {
 
+    private static Logger logger = LoggerFactory.getLogger(SchedulerTest.class);
+
     private JobLauncher jobLauncher;
     private Job job;
     private TestItemReader reader;
+    private TestItemProcessor processor;
     private BatchMapper batchMapper;
 
 
@@ -50,35 +57,58 @@ public class SchedulerTest {
         this.batchMapper = batchMapper;
     }
 
-    public void testPrint() throws Exception {
-//        System.out.println("prova");
-
-        List<MachineMaxTicket> machines = batchMapper.getLastIdTicketMachine();
-        reader.setMachines(machines);
-
-        JobExecution execution = jobLauncher.run(job, new JobParameters());
-//        System.out.println("Exit Status : " + execution.getStatus());
-//        execution.wait();
+    public TestItemProcessor getProcessor() {
+        return processor;
     }
 
+    public void setProcessor(TestItemProcessor processor) {
+        this.processor = processor;
+    }
 
-//    private TaskExecutor executor;
-//
-//    public SchedulerTest() {
-//        executor = null;
-//    }
-//
-//    public SchedulerTest(TaskExecutor te) {
-//        executor = te;
-//    }
-//
-//    public void callMethod() {
-//        executor.execute(new Runnable() {
-//            public void run() {
-//                System.out.println("prova");
-//            }
-//        });
-//    }
-//
+    public void startBatch() throws Exception {
+
+        logger.trace("enter");
+
+        // prima di tutto elimino le macchine da eliminare (flag TO_DELETE a true)
+        List<MachineMaxTicket> machines = Collections.<MachineMaxTicket>emptyList();
+        try {
+            batchMapper.deleteMachine();
+
+            machines = batchMapper.getLastIdTicketMachine();
+            reader.setMachines(machines);
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+            return;
+        }
+
+        // qui elimino gli oggetti sql del processor associati ai db eliminati
+        Map<Integer, SqlSessionFactory> listSqlSessionFactory = processor.getListSqlSessionFactory();
+        MachineMaxTicket compareMachine = new MachineMaxTicket();
+        for (int key : listSqlSessionFactory.keySet()) {
+            compareMachine.setId(key);
+            if (!machines.contains(compareMachine)) {
+                listSqlSessionFactory.remove(key);
+            }
+        }
+
+        Map<Integer, String> listIpSqlSessionBinding = processor.getListIpSqlSessionBinding();
+        for (int key : listIpSqlSessionBinding.keySet()) {
+            compareMachine.setId(key);
+            if (!machines.contains(compareMachine)) {
+                listIpSqlSessionBinding.remove(key);
+            }
+        }
+
+        if (machines.isEmpty())
+            return;
+
+        logger.debug("startBatch will call job execution");
+
+        // qui parto con il job
+//        JobExecution execution = jobLauncher.run(job, new JobParameters());
+        jobLauncher.run(job, new JobParameters());
+
+        logger.trace("exit");
+    }
 
 }

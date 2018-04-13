@@ -51,7 +51,8 @@
         <id column="ID" property="id" />
         <id column="NAME" property="name" />
         <id column="LAST_UPDATE" property="lastUpdate" />
-        <id column="IP" property="ip" />    
+        <id column="IP" property="ip" />
+        <id column="TO_DELETE" property="toDelete" />
     </resultMap>
     
     <resultMap type="MachineMaxTicket" id="MachineMaxTicket">
@@ -73,11 +74,16 @@
     
     <select id="getLastIdTicketMachine" resultMap="MachineMaxTicket">
         SELECT ID, IP, MAX_TICKET FROM
-        (SELECT ID, IP FROM MACHINE) AS M
+        (SELECT ID, IP FROM MACHINE WHERE TO_DELETE=FALSE) AS M
         LEFT OUTER JOIN
         (SELECT PRINT_TICKET.ID_M, MAX(PRINT_TICKET.ID_T) AS MAX_TICKET FROM PRINT_TICKET GROUP BY PRINT_TICKET.ID_M) AS T
         ON T.ID_M = M.ID
     </select>
+    
+    <delete id="deleteMachine">
+        DELETE FROM MACHINE
+        WHERE TO_DELETE=TRUE
+    </delete>
     
     <update id="updateTicket">
         UPDATE PRINT_TICKET SET

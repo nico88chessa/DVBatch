@@ -14,8 +14,9 @@
 
     <bean id="schedulerTest" class="com.dv.batch.SchedulerTest">
         <property name="jobLauncher" ref="jobLauncher" />
-        <property name="job" ref="job2" />
+        <property name="job" ref="job" />
         <property name="reader" ref="testItemReader" />
+        <property name="processor" ref="testItemProcessor" />
         <property name="batchMapper" ref="batchMapper" />
     </bean>
     
@@ -24,7 +25,7 @@
     <task:annotation-driven executor="executor" scheduler="scheduler" />
 
     <task:scheduled-tasks scheduler="scheduler">
-        <task:scheduled ref="schedulerTest" method="testPrint" fixed-delay="10000"/>
+        <task:scheduled ref="schedulerTest" method="startBatch" fixed-delay="10000"/>
     </task:scheduled-tasks>
     
     
