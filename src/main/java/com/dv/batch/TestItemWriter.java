@@ -119,11 +119,17 @@ public class TestItemWriter implements ItemWriter<WriterItem> {
                     // aggiorno solamente se il ticket presente nel db centralizzato e' in stampa (status = 0);
                     Ticket t = batchMapper.selectTicket(machineMaxTicket.getId(), machineMaxTicket.getMaxTicket());
 
-                    if (t.getPrintStatus() == PRINT_STATUS_PRINTING) {
-                        RemoteTicket firstRemoteTicket = remoteTicketList.remove(0);
-                        Ticket firstTicket = getTicketFromRemoteTicket(firstRemoteTicket);
-                        batchMapper.updateTicket(firstTicket);
-                    }
+                    // se l'ultimo ticket inserito corrisponde all'ultimo presente in macchina verifico
+                    if (t.getIdT() == machineMaxTicket.getId()) {
+
+						// lo tolgo dalla lista e, se prima era in stampa, aggiorno lo stato
+                		RemoteTicket firstRemoteTicket = remoteTicketList.remove(0);
+                    
+	                    if (t.getPrintStatus() == PRINT_STATUS_PRINTING) {
+        	                Ticket firstTicket = getTicketFromRemoteTicket(firstRemoteTicket);
+            	            batchMapper.updateTicket(firstTicket);
+	                    }
+	                }
                 }
 
                 // controllo se dopo il controllo dell'aggiornamento del ticket,

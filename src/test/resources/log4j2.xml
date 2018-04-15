@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- lo status indica il livello di log da associare agli eventi di log4j -->
+<Configuration status="WARN">
+    
+    <Appenders>
+    
+        <Console
+            name="Console"
+            target="SYSTEM_OUT">
+            <PatternLayout
+                pattern="%d{dd-MM-yyyy HH:mm:ss.SSS} [%t] %-5p %c{10} - %m%n" />
+        </Console>
+    
+        <RollingFile
+            name="RollingFile"
+            fileName="${sys:jboss.server.log.dir}/dvbatch.log"
+            filePattern="${sys:jboss.server.log.dir}/dvbatch-%d{yyyyMMdd}-%i.log.gz"
+            append="true"
+            >
+            <PatternLayout pattern="%d{dd-MM-yyyy HH:mm:ss.SSS} [%t] %-5p %c{10} - %m%n" />
+            <Policies>
+                <TimeBasedTriggeringPolicy />
+                <SizeBasedTriggeringPolicy size="250 MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="5"/>
+        </RollingFile>
+        
+        <RollingFile
+            name="RollingFileSpringBeansFactory"
+            fileName="${sys:jboss.server.log.dir}/dvbatch-sbf.log"
+            filePattern="${sys:jboss.server.log.dir}/dvbatch-sbf-%d{yyyyMMdd}-%i.log.gz"
+            append="true"
+            >
+            <PatternLayout pattern="%d{dd-MM-yyyy HH:mm:ss.SSS} [%t] %-5p %c{10} - %m%n" />
+            <Policies>
+                <TimeBasedTriggeringPolicy />
+                <SizeBasedTriggeringPolicy size="250 MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="5"/>
+        </RollingFile>
+    
+    </Appenders>
+    
+    <Loggers>
+    
+        <Logger name="org.springframework.beans.factory" level="TRACE" additivity="false">
+            <AppenderRef ref="RollingFileSpringBeansFactory" />
+        </Logger>
+    
+        <Root level="TRACE" additivity="false" >
+            <AppenderRef ref="Console" />
+            <AppenderRef ref="RollingFile" />
+        </Root>
+    
+    </Loggers>
+    
+</Configuration>
