@@ -108,6 +108,7 @@ public class TestItemWriter implements ItemWriter<WriterItem> {
 
             MachineMaxTicket machineMaxTicket = item.getMachineMaxTicket();
             List<RemoteTicket> remoteTicketList = item.getRemoteTicketList();
+            boolean updateDone=false;
 
             // se la lista e' vuota, esco
             if (remoteTicketList.isEmpty())
@@ -136,9 +137,10 @@ public class TestItemWriter implements ItemWriter<WriterItem> {
             		RemoteTicket firstRemoteTicket = remoteTicketList.remove(0);
 
                     if (t.getPrintStatus() == PRINT_STATUS_PRINTING) {
-    	                Ticket firstTicket = getTicketFromRemoteTicket(firstRemoteTicket);
+    	                Ticket firstTicket = getTicketFromRemoteTicket(machineMaxTicket, firstRemoteTicket);
         	            try {
                             batchMapper.updateTicket(firstTicket);
+                            updateDone = true;
                         } catch (MyBatisSystemException | PersistenceException e) {
                             logger.error("FirstTicket values");
                             logger.error("idM: "+firstTicket.getIdM());
@@ -152,42 +154,46 @@ public class TestItemWriter implements ItemWriter<WriterItem> {
 
             // controllo se dopo il controllo dell'aggiornamento del ticket,
             // ne ho altri o meno; se e' vuoto, esco
-            if (remoteTicketList.isEmpty())
-                continue;
+            if (!remoteTicketList.isEmpty()) {
 
-            List<Ticket> ticketList = new ArrayList<Ticket>();
-            for (RemoteTicket rt : remoteTicketList)
-                ticketList.add(getTicketFromRemoteTicket(machineMaxTicket, rt));
+                List<Ticket> ticketList = new ArrayList<Ticket>();
+                for (RemoteTicket rt : remoteTicketList)
+                    ticketList.add(getTicketFromRemoteTicket(machineMaxTicket, rt));
 
-            // e poi aggiungo tutti gli altri
-            try {
-                batchMapper.insertNewTickets(ticketList);
-            } catch (MyBatisSystemException | PersistenceException e) {
-                logger.error("Insert new tickets error");
-                logger.error("TicketList size: "+ticketList.size());
-                logger.error(e.getMessage());
-                continue;
+                // e poi aggiungo tutti gli altri
+                try {
+                    batchMapper.insertNewTickets(ticketList);
+                    updateDone = true;
+                } catch (MyBatisSystemException | PersistenceException e) {
+                    logger.error("Insert new tickets error");
+                    logger.error("TicketList size: "+ticketList.size());
+                    logger.error(e.getMessage());
+                    continue;
+                }
             }
 
-            // aggiorno l'update del tempo nella tabella Machine
-            LocalDateTime ldt = LocalDateTime.now();
-            Date out = Date.from(ldt.atZone(ZoneId.systemDefault()).toInstant());
+            if (updateDone) {
 
-            Machine machine2update = new Machine();
-            machine2update.setId(machineMaxTicket.getId());
-            machine2update.setLastUpdate(out);
+                // aggiorno l'update del tempo nella tabella Machine
+                LocalDateTime ldt = LocalDateTime.now();
+                Date out = Date.from(ldt.atZone(ZoneId.systemDefault()).toInstant());
 
-            try {
-                batchMapper.updateMachineUpdateTime(machine2update);
-            } catch (MyBatisSystemException | PersistenceException e) {
-                logger.error("Update machine update time");
-                logger.error("Machine values");
-                logger.error("id: "+machine2update.getId());
-                logger.error("ip: "+machine2update.getIp());
-                logger.error("name: "+machine2update.getName());
-                logger.error("last update: "+machine2update.getLastUpdate());
-                logger.error("to delete: "+machine2update.isToDelete());
-                logger.error(e.getMessage());
+                Machine machine2update = new Machine();
+                machine2update.setId(machineMaxTicket.getId());
+                machine2update.setLastUpdate(out);
+
+                try {
+                    batchMapper.updateMachineUpdateTime(machine2update);
+                } catch (MyBatisSystemException | PersistenceException e) {
+                    logger.error("Update machine update time");
+                    logger.error("Machine values");
+                    logger.error("id: "+machine2update.getId());
+                    logger.error("ip: "+machine2update.getIp());
+                    logger.error("name: "+machine2update.getName());
+                    logger.error("last update: "+machine2update.getLastUpdate());
+                    logger.error("to delete: "+machine2update.isToDelete());
+                    logger.error(e.getMessage());
+                }
             }
 
         }

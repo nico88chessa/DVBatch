@@ -85,46 +85,14 @@
         WHERE TO_DELETE=TRUE
     </delete>
     
-    <update id="updateTicket">
+    <update id="updateTicket" parameterType="Ticket">
         UPDATE PRINT_TICKET SET
-        QUEUE_ACTIVATED = #{queueActivated},
-        QUEUE_POSITION = #{queuePosition},
-        WORK_ID = #{workId},
-        FILE_NAME = #{fileName},
-        FILE_LENGTH = #{fileLength},
-        FILE_HEIGHT = #{fileHeight},
-        FILE_PIXEL_X = #{filePixelX},
-        FILE_PIXEL_Y = #{filePixelY},
-        FILE_RESOLUTION_X = #{fileResolutionX},
-        FILE_RESOLUTION_Y = #{fileResolutionY},
-        FILE_TOTALPIXELX = #{fileTotalpixelX},
-        FILE_TOTALPIXELY = #{fileTotalpixelY},
-        FILE_TOTALSIZEX = #{fileTotalsizex},
-        FILE_TOTALSIZEY = #{fileTotalsizey},
-        CYLINDER_LENGTH = #{cylinderLength},
-        CYLINDER_DIAMETER = #{cylinderDiameter},
-        CYLINDER_START_AT = #{cylinderStartAt},
-        CYLINDER_CROSS_AT = #{cylinderCrossAt},
-        LASER_KIND = #{laserKind},
-        LASER_SOURCES = #{laserSources},
-        LASER_MIN_POWER = #{laserMinPower},
-        LASER_MAX_POWER = #{laserMaxPower},
-        LASER_SHOTS = #{laserShots},
-        LASER_PERIOD = #{laserPeriod},
-        SETUP_CALIBRATION = #{setupCalibration},
-        SETUP_OFFSET_X = #{setupOffsetX},
-        SETUP_OFFSET_Y = #{setupOffsetY},
-        SETUP_Z_PRESENT = #{setupZPresent},
-        SETUP_Z_POSITION = #{setupZPosition},
-        SETUP_FOCAL_PRESENT = #{setupFocalPresent},
-        SETUP_FOCAL_POSITION = #{setupFocalPosition},
-        SETUP_SPEED = #{setupSpeed},
-        SETUP_ENGRAVING_MODE = #{setupEngravingMode},
         PRINT_START_AT = #{printStartAt},
         PRINT_STOP_AT = #{printStopAt},
-        PRINT_STATUS = #{printStatus},
-        PRINT_ERROR = #{printError},
-        NOTES = #{notes}
+        <if test=" printError!=null and printError!='' ">
+            PRINT_ERROR = #{printError},
+        </if>
+        PRINT_STATUS = #{printStatus}
         WHERE
         ID_M = #{idM} AND ID_T = #{idT}
     </update>
