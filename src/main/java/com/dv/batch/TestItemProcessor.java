@@ -8,6 +8,7 @@ import java.util.Properties;
 import javax.sql.DataSource;
 
 import org.apache.ibatis.datasource.unpooled.UnpooledDataSourceFactory;
+import org.apache.ibatis.exceptions.PersistenceException;
 import org.apache.ibatis.mapping.Environment;
 import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.SqlSession;
@@ -15,6 +16,7 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.apache.ibatis.session.SqlSessionFactoryBuilder;
 import org.apache.ibatis.transaction.TransactionFactory;
 import org.apache.ibatis.transaction.jdbc.JdbcTransactionFactory;
+import org.mybatis.spring.MyBatisSystemException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.item.ItemProcessor;
@@ -60,7 +62,7 @@ public class TestItemProcessor implements ItemProcessor<MachineMaxTicket, Writer
 
     private void buildSqlSessionFactory(MachineMaxTicket machine) {
 
-        logger.trace("buildSqlSessionFactory enter");
+        logger.trace("Enter");
 
         TransactionFactory transactionFactory = new JdbcTransactionFactory();
         UnpooledDataSourceFactory dataSourceFactory = new UnpooledDataSourceFactory();
@@ -98,14 +100,14 @@ public class TestItemProcessor implements ItemProcessor<MachineMaxTicket, Writer
         listSqlSessionFactory.put(machine.getId(), sessionFactory);
         listIpSqlSessionBinding.put(machine.getId(), machine.getIp());
 
-        logger.trace("buildSqlSessionFactory exit");
+        logger.trace("Exit");
     }
 
 
     @Override
     public WriterItem process(MachineMaxTicket machine) {
 
-        logger.trace("enter");
+        logger.trace("Enter");
 
         if (!listSqlSessionFactory.containsKey(machine.getId())) {
 
@@ -139,13 +141,17 @@ public class TestItemProcessor implements ItemProcessor<MachineMaxTicket, Writer
             writerItem.setRemoteTicketList(tickets);
             writerItem.setMachineMaxTicket(machine);
 
-        } catch (Exception e) {
+        } catch (MyBatisSystemException | PersistenceException e) {
+            logger.error("Tickets from remote machine error");
+            logger.error("ip: "+machine.getIp());
+            logger.error("id: "+machine.getId());
+            logger.error("maxTicket: "+machine.getMaxTicket());
             logger.error(e.getMessage());
         } finally {
             session.close();
         }
 
-        logger.trace("exit");
+        logger.trace("Exit");
 
         return writerItem;
 

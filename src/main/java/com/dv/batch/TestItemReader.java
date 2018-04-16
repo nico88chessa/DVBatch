@@ -28,13 +28,13 @@ public class TestItemReader implements ItemReader<MachineMaxTicket> {
     @Override
     public MachineMaxTicket read() throws Exception, UnexpectedInputException, ParseException, NonTransientResourceException {
 
-        logger.trace("enter");
+        logger.trace("Enter");
 
         if (machines==null || machines.isEmpty())
             return null;
 
         MachineMaxTicket machine = machines.remove(0);
-        logger.trace("exit");
+        logger.trace("Exit");
 
         return machine;
     }

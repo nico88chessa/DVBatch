@@ -4,7 +4,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.ibatis.exceptions.PersistenceException;
 import org.apache.ibatis.session.SqlSessionFactory;
+import org.mybatis.spring.MyBatisSystemException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.Job;
@@ -67,7 +69,7 @@ public class SchedulerTest {
 
     public void startBatch() throws Exception {
 
-        logger.trace("enter");
+        logger.trace("Enter");
 
         // prima di tutto elimino le macchine da eliminare (flag TO_DELETE a true)
         List<MachineMaxTicket> machines = Collections.<MachineMaxTicket>emptyList();
@@ -76,7 +78,8 @@ public class SchedulerTest {
 
             machines = batchMapper.getLastIdTicketMachine();
             reader.setMachines(machines);
-        } catch (Exception e) {
+        } catch (MyBatisSystemException | PersistenceException e) {
+            logger.error("Error from getLastIdTicketMachine query");
             logger.error(e.getMessage());
             return;
         }
@@ -102,13 +105,12 @@ public class SchedulerTest {
         if (machines.isEmpty())
             return;
 
-        logger.debug("startBatch will call job execution");
+        logger.debug("StartBatch will call job execution");
 
         // qui parto con il job
-//        JobExecution execution = jobLauncher.run(job, new JobParameters());
         jobLauncher.run(job, new JobParameters());
 
-        logger.trace("exit");
+        logger.trace("Exit");
     }
 
 }
