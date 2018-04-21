@@ -22,7 +22,12 @@
                 <TimeBasedTriggeringPolicy />
                 <SizeBasedTriggeringPolicy size="250 MB"/>
             </Policies>
-            <DefaultRolloverStrategy max="5"/>
+            <DefaultRolloverStrategy fileindex="max" max="5">
+                <Delete basePath="${sys:jboss.server.log.dir}" maxDepth="2">
+                    <IfFileName glob="dvbatch-*.log.gz" />
+                    <IfLastModified age="5d" />
+                </Delete>
+            </DefaultRolloverStrategy>
         </RollingFile>
         
         <RollingFile
@@ -34,9 +39,14 @@
             <PatternLayout pattern="%d{dd-MM-yyyy HH:mm:ss.SSS} [%t] %-5p %c{10} - %m%n" />
             <Policies>
                 <TimeBasedTriggeringPolicy />
-                <SizeBasedTriggeringPolicy size="250 MB"/>
+                <SizeBasedTriggeringPolicy size="250 MB"/>s
             </Policies>
-            <DefaultRolloverStrategy max="5"/>
+            <DefaultRolloverStrategy fileindex="max" max="5">
+                <Delete basePath="${sys:jboss.server.log.dir}" maxDepth="2">
+                    <IfFileName glob="dvbatch-sbf*.log.gz" />
+                    <IfLastModified age="5d" />
+                </Delete>
+            </DefaultRolloverStrategy>
         </RollingFile>
     
     </Appenders>
@@ -47,7 +57,7 @@
             <AppenderRef ref="RollingFileSpringBeansFactory" />
         </Logger>
     
-        <Root level="TRACE" additivity="false" >
+        <Root level="INFO" additivity="false" >
             <AppenderRef ref="Console" />
             <AppenderRef ref="RollingFile" />
         </Root>
